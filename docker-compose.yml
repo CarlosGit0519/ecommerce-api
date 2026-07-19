@@ -15,5 +15,21 @@ services:
       timeout: 5s
       retries: 5
 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: 3003
+      DATABASE_URL: "postgresql://ecommerce_user:ecommerce_password@postgres:5432/ecommerce_db?schema=public"
+      JWT_SECRET: "change-this-development-secret-before-deploying"
+      JWT_EXPIRES_IN: "1d"
+    ports:
+      - "3003:3003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres-data:
