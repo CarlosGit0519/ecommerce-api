@@ -14,6 +14,12 @@ enum Role {
   CUSTOMER
 }
 
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
 model User {
   id           String   @id @default(cuid())
   name         String
@@ -21,6 +27,7 @@ model User {
   passwordHash String
   role         Role     @default(CUSTOMER)
   cart         Cart?
+  orders       Order[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
@@ -45,6 +52,7 @@ model Product {
   categoryId    String
   category      Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   cartItems     CartItem[]
+  orderItems    OrderItem[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -72,5 +80,33 @@ model CartItem {
   updatedAt DateTime @updatedAt
 
   @@unique([cartId, productId])
+  @@index([productId])
+}
+
+model Order {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Restrict)
+  status    OrderStatus @default(PENDING)
+  total     Decimal     @db.Decimal(10, 2)
+  items     OrderItem[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([userId, createdAt])
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  sku       String
+  name      String
+  unitPrice Decimal  @db.Decimal(10, 2)
+  quantity  Int
+  createdAt DateTime @default(now())
+
   @@index([productId])
 }
