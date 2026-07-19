@@ -2,6 +2,7 @@ import { Prisma } from "../../generated/prisma/client";
 import type { Request, Response } from "express";
 
 import { prisma } from "../../lib/prisma";
+import { orderParamsSchema } from "./order.schemas";
 
 const orderInclude = {
   items: {
@@ -91,4 +92,36 @@ export async function listMyOrders(request: Request, response: Response): Promis
   });
 
   response.status(200).json({ data: { orders } });
+}
+
+export async function confirmPayment(request: Request, response: Response): Promise<void> {
+  const { orderId } = orderParamsSchema.parse(request.params);
+  const order = await prisma.order.findFirst({
+    where: {
+      id: orderId,
+      userId: request.auth!.userId,
+    },
+  });
+
+  if (!order) {
+    response.status(404).json({
+      error: { message: "Order not found." },
+    });
+    return;
+  }
+
+  if (order.status !== "PENDING") {
+    response.status(409).json({
+      error: { message: "Only pending orders can be paid." },
+    });
+    return;
+  }
+
+  const paidOrder = await prisma.order.update({
+    where: { id: order.id },
+    data: { status: "PAID" },
+    include: orderInclude,
+  });
+
+  response.status(200).json({ data: { order: paidOrder } });
 }
