@@ -3,6 +3,7 @@ import { ZodError } from "zod";
 
 import { authRouter } from "./modules/auth/auth.routes";
 import { categoryRouter } from "./modules/categories/category.routes";
+import { cartRouter } from "./modules/cart/cart.routes";
 import { productRouter } from "./modules/products/product.routes";
 
 export const app = express();
@@ -16,6 +17,7 @@ app.get("/health", (_request, response) => {
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/categories", categoryRouter);
 app.use("/api/v1/products", productRouter);
+app.use("/api/v1/cart", cartRouter);
 
 app.use((error: unknown, _request: express.Request, response: express.Response, _next: express.NextFunction) => {
   if (error instanceof ZodError) {
