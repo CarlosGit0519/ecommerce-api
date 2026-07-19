@@ -1,6 +1,8 @@
 import express from "express";
+import swaggerUi from "swagger-ui-express";
 import { ZodError } from "zod";
 
+import { swaggerSpec } from "./config/swagger";
 import { authRouter } from "./modules/auth/auth.routes";
 import { categoryRouter } from "./modules/categories/category.routes";
 import { cartRouter } from "./modules/cart/cart.routes";
@@ -10,6 +12,7 @@ import { orderRouter } from "./modules/orders/order.routes";
 export const app = express();
 
 app.use(express.json());
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.get("/health", (_request, response) => {
   response.status(200).json({ status: "ok" });
