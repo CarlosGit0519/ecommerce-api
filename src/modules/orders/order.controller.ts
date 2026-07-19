@@ -3,6 +3,7 @@ import type { Request, Response } from "express";
 
 import { prisma } from "../../lib/prisma";
 import { orderParamsSchema } from "./order.schemas";
+import { assertStockAvailable } from "./order.rules";
 
 const orderInclude = {
   items: {
@@ -25,6 +26,13 @@ export async function checkout(request: Request, response: Response): Promise<vo
       if (!cart?.items.length) {
         throw new Error("Cart is empty.");
       }
+
+      assertStockAvailable(cart.items.map((item) => ({
+        name: item.product.name,
+        quantity: item.quantity,
+        stockQuantity: item.product.stockQuantity,
+        unitPrice: Number(item.product.price),
+      })));
 
       let total = new Prisma.Decimal(0);
 
